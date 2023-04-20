@@ -4,7 +4,7 @@ import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.metrics.classification import confusion_matrix
+from sklearn.metrics import confusion_matrix
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -12,6 +12,7 @@ from tqdm import tqdm
 from resnet import resnet34
 from dataset import ECGDataset
 from utils import cal_scores, find_optimal_threshold, split_data
+from sklearn.metrics import roc_curve, auc
 
 
 def parse_args():
@@ -51,6 +52,7 @@ def get_thresholds(val_loader, net, device, threshold_path):
 
 def apply_thresholds(test_loader, net, device, thresholds):
     output_list, label_list = [], []
+    classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
     for _, (data, label) in enumerate(tqdm(test_loader)):
         data, labels = data.to(device), label.to(device)
         output = net(data)
@@ -60,13 +62,30 @@ def apply_thresholds(test_loader, net, device, thresholds):
     y_trues = np.vstack(label_list)
     y_scores = np.vstack(output_list)
     y_preds = []
-    scores = [] 
+    scores = []
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
     for i in range(len(thresholds)):
         y_true = y_trues[:, i]
         y_score = y_scores[:, i]
         y_pred = (y_score >= thresholds[i]).astype(int)
-        scores.append(cal_scores(y_true, y_pred, y_score))
         y_preds.append(y_pred)
+        scores.append(cal_scores(y_true, y_pred, y_score))
+        fpr[i], tpr[i], _ = roc_curve(y_true, y_score)
+        roc_auc[classes[i]] = auc(fpr[i], tpr[i])
+        plt.plot(fpr[i], tpr[i], label=f'{classes[i]} (AUC = {roc_auc[classes[i]]:0.2})')   
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('DeepL ROC Curve')
+    plt.legend(loc="lower right")
+    plt.savefig('results/roc_DL.png')
+    plt.show()
+    plt.close()
+        
     y_preds = np.array(y_preds).transpose()
     scores = np.array(scores)
     print('Precisions:', scores[:, 0])
