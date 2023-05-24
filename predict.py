@@ -95,6 +95,7 @@ def apply_thresholds(test_loader, net, device, thresholds):
     print('Accs:', scores[:, 4])
     print(np.mean(scores, axis=0))
     plot_cm(y_trues, y_preds)
+    comp_confmat(y_trues, y_preds)
 
 
 def plot_cm(y_trues, y_preds, normalize=True, cmap=plt.cm.Blues):
@@ -128,6 +129,43 @@ def plot_cm(y_trues, y_preds, normalize=True, cmap=plt.cm.Blues):
         plt.savefig(f'results/{label}.png')
         plt.close(fig)
 
+def comp_confmat(y_true, y_test_scores, cmap=plt.cm.Blues):
+
+    # extract the different classes
+    classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+
+    confusion_matrix = [[0 for _ in range(9)] for _ in range(9)]
+    for true_label, predicted_label in zip(y_true, y_test_scores):
+        true_index = true_label.argmax()
+        predicted_index = predicted_label.argmax()
+        if true_index == predicted_index:
+            confusion_matrix[true_index][true_index] += 1
+        else:
+            confusion_matrix[true_index][predicted_index] += 1
+
+    ys = np.array(confusion_matrix)
+    fig, axs = plt.subplots()
+    im = axs.imshow(ys, cmap=cmap)
+    axs.figure.colorbar(im, ax=axs)
+    fmt = '.2f'
+    xlabels = classes
+    ylabels = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+    axs.set_xticks(np.arange(len(xlabels)))
+    axs.set_yticks(np.arange(len(ylabels)))
+    axs.set_xticklabels(xlabels)
+    axs.set_yticklabels(ylabels)
+    thresh = ys.max() / 2
+    for i in range(ys.shape[0]):
+        for j in range(ys.shape[1]):
+            axs.text(j, i, format(ys[i, j], fmt),
+                    ha='center', va='center',
+                    color='white' if ys[i, j] > thresh else 'black')
+    #np.set_printoptions(precision=2)
+    fig.tight_layout()
+    plt.show()
+    plt.savefig(f'./plots/complete_cm.png')
+    plt.clf()
+    
 
 if __name__ == "__main__":
     args = parse_args()

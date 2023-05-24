@@ -3,7 +3,6 @@ import os
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-
 from tqdm import tqdm
 import numpy as np
 
@@ -19,10 +18,10 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=42, help='Seed to split data')
     parser.add_argument('--num-classes', type=int, default=int, help='Num of diagnostic classes')
     parser.add_argument('--lr', '--learning-rate', type=float, default=0.0001, help='Learning rate')
-    parser.add_argument('--batch-size', type=int, default=32, help='Batch size')
+    parser.add_argument('--batch-size', type=int, default=16, help='Batch size')
     parser.add_argument('--num-workers', type=int, default=4, help='Num of workers to load data')
     parser.add_argument('--phase', type=str, default='train', help='Phase: train or test')
-    parser.add_argument('--epochs', type=int, default=30, help='Training epochs')
+    parser.add_argument('--epochs', type=int, default=35, help='Training epochs')
     parser.add_argument('--resume', default=False, action='store_true', help='Resume')
     parser.add_argument('--use-gpu', default=False, action='store_true', help='Use GPU')
     parser.add_argument('--model-path', type=str, default='', help='Path to saved model')
@@ -99,7 +98,7 @@ if __name__ == "__main__":
         leads = args.leads.split(',')
         nleads = len(leads)
     
-    label_csv = os.path.join(data_dir, 'labels.csv')
+    label_csv = os.path.join(data_dir, 'labelx.csv')
     
     train_folds, val_folds, test_folds = split_data(seed=args.seed)
     train_dataset = ECGDataset('train', data_dir, label_csv, train_folds, leads)
