@@ -30,6 +30,46 @@ class BasicBlock1d(nn.Module):
         return out
 
 
+class Bottleneck1d(nn.Module):
+    expansion = 4
+
+    def __init__(self, inplanes, planes, stride=1, downsample=None):
+        super(Bottleneck1d, self).__init__()
+        self.conv1 = nn.Conv1d(inplanes, planes, kernel_size=1, bias=False)
+        self.bn1 = nn.BatchNorm1d(planes)
+        self.conv2 = nn.Conv1d(planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm1d(planes)
+        self.dropout = nn.Dropout(p=0.2)
+        self.conv3 = nn.Conv1d(planes, planes * self.expansion, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm1d(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
+
+    def forward(self, x):
+        residual = x
+
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+        out = self.dropout(out)
+
+        out = self.conv3(out)
+        out = self.bn3(out)
+
+        if self.downsample is not None:
+            residual = self.downsample(x)
+
+        out += residual
+        out = self.relu(out)
+
+        return out
+
+
 class ResNet1d(nn.Module):
     def __init__(self, block, layers, input_channels=12, inplanes=64, num_classes=9):
         super(ResNet1d, self).__init__()
@@ -87,3 +127,6 @@ def resnet18(**kwargs):
 def resnet34(**kwargs):
     model = ResNet1d(BasicBlock1d, [3, 4, 6, 3], **kwargs)
     return model
+
+def resnet50(**kwargs):
+    model = ResNet1d(Bottleneck1d, [3, 4, 6, 3], **kwargs)
