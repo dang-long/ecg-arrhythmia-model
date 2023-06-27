@@ -7,7 +7,7 @@ from tqdm import tqdm
 import numpy as np
 
 from dataset import ECGDataset
-from resnet import resnet34
+from resnet import resnet34, resnet50
 from utils import cal_f1s, cal_aucs, split_data
 
 
@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument('--batch-size', type=int, default=16, help='Batch size')
     parser.add_argument('--num-workers', type=int, default=4, help='Num of workers to load data')
     parser.add_argument('--phase', type=str, default='train', help='Phase: train or test')
-    parser.add_argument('--epochs', type=int, default=35, help='Training epochs')
+    parser.add_argument('--epochs', type=int, default=40, help='Training epochs')
     parser.add_argument('--resume', default=False, action='store_true', help='Resume')
     parser.add_argument('--use-gpu', default=False, action='store_true', help='Use GPU')
     parser.add_argument('--model-path', type=str, default='', help='Path to saved model')
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     database = os.path.basename(data_dir)
 
     if not args.model_path:
-        args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}.pth'
+        args.model_path = f'models/resnet50_{database}_{args.leads}_{args.seed}.pth'
 
     if args.use_gpu and torch.cuda.is_available():
         device = torch.device('cuda:0')
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
     test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    net = resnet34(input_channels=nleads).to(device)
+    net = resnet50(input_channels=nleads).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)
     
