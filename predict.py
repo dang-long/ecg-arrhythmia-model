@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from resnet import resnet34
+from resnet import resnet34, resnet50
 from dataset import ECGDataset
 from utils import cal_scores, find_optimal_threshold, split_data
 from sklearn.metrics import roc_curve, auc
@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument('--data-dir', type=str, default='data/CPSC', help='Directory to data dir')
     parser.add_argument('--leads', type=str, default='all', help='ECG leads to use')
     parser.add_argument('--seed', type=int, default=42, help='Seed to split data')
-    parser.add_argument('--batch-size', type=int, default=32, help='Batch size')
+    parser.add_argument('--batch-size', type=int, default=16, help='Batch size')
     parser.add_argument('--num-workers', type=int, default=4, help='Number of workers to load data')
     parser.add_argument('--use-gpu', default=False, action='store_true', help='Use gpu')
     parser.add_argument('--model-path', type=str, default='', help='Path to saved model')
@@ -80,7 +80,7 @@ def apply_thresholds(test_loader, net, device, thresholds):
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('DeepL ROC Curve')
+    plt.title('ROC Curve')
     plt.legend(loc="lower right")
     plt.savefig('results/roc_DL.png')
     plt.show()
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     data_dir = os.path.normpath(args.data_dir)
     database = os.path.basename(data_dir)
     if not args.model_path:
-        args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}.pth'
+        args.model_path = f'models/resnet50_{database}_{args.leads}_{args.seed}.pth'
     args.threshold_path = f'models/{database}-threshold.pkl'
     if args.use_gpu and torch.cuda.is_available():
         device = torch.device('cuda:0')
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     data_dir = args.data_dir
     label_csv = os.path.join(data_dir, 'labels.csv')
     
-    net = resnet34(input_channels=nleads).to(device)
+    net = resnet50(input_channels=nleads).to(device)
     net.load_state_dict(torch.load(args.model_path, map_location=device))
     net.eval()
 
