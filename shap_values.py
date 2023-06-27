@@ -8,7 +8,7 @@ import shap
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-from resnet import resnet34
+from resnet import resnet34, resnet50
 from utils import prepare_input
 
 
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     args = parse_args()
     data_dir = os.path.normpath(args.data_dir)
     database = os.path.basename(data_dir)
-    args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}.pth'
+    args.model_path = f'models/resnet50_{database}_{args.leads}_{args.seed}.pth'
     label_csv = os.path.join(data_dir, 'labels.csv')
     reference_csv = os.path.join(data_dir, 'reference.csv')
     lleads = np.array(['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'])
@@ -126,7 +126,7 @@ if __name__ == '__main__':
         leads = args.leads.split(',')
         nleads = len(leads)
     
-    model = resnet34(input_channels=nleads).to(device)
+    model = resnet50(input_channels=nleads).to(device)
     model.load_state_dict(torch.load(args.model_path, map_location=device))
     model.eval()
 
