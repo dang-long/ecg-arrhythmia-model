@@ -2,6 +2,9 @@
 __pycache__
 
 *.bak
+data/*.*
+data/*
+data/**/
 data/CPSC
 data/**/*.mat
 data/**/*.hea
@@ -16,3 +19,4 @@ logs/*.log
 logs/*.csv
 shap/*.png
 plots/*.png
+/data

@@ -98,7 +98,7 @@ if __name__ == "__main__":
         leads = args.leads.split(',')
         nleads = len(leads)
     
-    label_csv = os.path.join(data_dir, 'labelx.csv')
+    label_csv = os.path.join(data_dir, 'labels.csv') #Modified. Long. 23.Mar.24, original: os.path.join(data_dir, 'labelx.csv')
     
     train_folds, val_folds, test_folds = split_data(seed=args.seed)
     train_dataset = ECGDataset('train', data_dir, label_csv, train_folds, leads)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
     test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    net = resnet50(input_channels=nleads).to(device)
+    net = resnet34(input_channels=nleads).to(device) #Modified. Long. 23.Mar.24, original: resnet50
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)
     

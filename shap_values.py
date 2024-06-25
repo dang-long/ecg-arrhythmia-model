@@ -126,7 +126,7 @@ if __name__ == '__main__':
         leads = args.leads.split(',')
         nleads = len(leads)
     
-    model = resnet50(input_channels=nleads).to(device)
+    model = resnet34(input_channels=nleads).to(device) #Modified. Long. 15.Apr.24, original: resnet50
     model.load_state_dict(torch.load(args.model_path, map_location=device))
     model.eval()
 

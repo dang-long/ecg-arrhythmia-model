@@ -53,6 +53,12 @@ def get_thresholds(val_loader, net, device, threshold_path):
 def apply_thresholds(test_loader, net, device, thresholds):
     output_list, label_list = [], []
     classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+    #handle extra classes, from preprocesse.py. Long. 21.Apr.24
+    # classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',
+    #            'UK1', 'UK2', 'UK3', 'UK4', 'UK5', 'UK6', 'UK7', 'UK8', 'UK9',
+    #            'UK10', 'UK11', 'UK12', 'UK13', 'UK14', 'UK15', 'UK16', 'UK17',
+    #            'UK18', 'UK19', 'UK20', 'UK21', 'UK22', 'UK23', 'UK24', 'UK25',
+    #            'UK26', 'UK27', 'UK28']    
     for _, (data, label) in enumerate(tqdm(test_loader)):
         data, labels = data.to(device), label.to(device)
         output = net(data)
@@ -100,6 +106,13 @@ def apply_thresholds(test_loader, net, device, thresholds):
 
 def plot_cm(y_trues, y_preds, normalize=True, cmap=plt.cm.Blues):
     classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+    #handle extra classes, from preprocesse.py. Long. 21.Apr.24
+    # classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',
+    #            'UK1', 'UK2', 'UK3', 'UK4', 'UK5', 'UK6', 'UK7', 'UK8', 'UK9',
+    #            'UK10', 'UK11', 'UK12', 'UK13', 'UK14', 'UK15', 'UK16', 'UK17',
+    #            'UK18', 'UK19', 'UK20', 'UK21', 'UK22', 'UK23', 'UK24', 'UK25',
+    #            'UK26', 'UK27', 'UK28']
+        
     for i, label in enumerate(classes):
         y_true = y_trues[:, i]
         y_pred = y_preds[:, i]
@@ -132,8 +145,15 @@ def plot_cm(y_trues, y_preds, normalize=True, cmap=plt.cm.Blues):
 def comp_confmat(y_true, y_test_scores, cmap=plt.cm.Blues):
 
     # extract the different classes
-    classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+    # classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
 
+    #handle extra classes, from preprocesse.py. Long. 21.Apr.24
+    classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',
+               'UK1', 'UK2', 'UK3', 'UK4', 'UK5', 'UK6', 'UK7', 'UK8', 'UK9',
+               'UK10', 'UK11', 'UK12', 'UK13', 'UK14', 'UK15', 'UK16', 'UK17',
+               'UK18', 'UK19', 'UK20', 'UK21', 'UK22', 'UK23', 'UK24', 'UK25',
+               'UK26', 'UK27', 'UK28']
+     
     confusion_matrix = [[0 for _ in range(9)] for _ in range(9)]
     for true_label, predicted_label in zip(y_true, y_test_scores):
         true_index = true_label.argmax()
@@ -149,7 +169,9 @@ def comp_confmat(y_true, y_test_scores, cmap=plt.cm.Blues):
     axs.figure.colorbar(im, ax=axs)
     fmt = '.2f'
     xlabels = classes
-    ylabels = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+    # ylabels = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+    #handle ylables with the extra classes. Long. 21.Apr.24
+    ylabels = classes
     axs.set_xticks(np.arange(len(xlabels)))
     axs.set_yticks(np.arange(len(ylabels)))
     axs.set_xticklabels(xlabels)
@@ -188,7 +210,7 @@ if __name__ == "__main__":
     data_dir = args.data_dir
     label_csv = os.path.join(data_dir, 'labels.csv')
     
-    net = resnet50(input_channels=nleads).to(device)
+    net = resnet34(input_channels=nleads).to(device) #Modify this line to use resnet34. Or use resnet50. Long. 21.Apr.24
     net.load_state_dict(torch.load(args.model_path, map_location=device))
     net.eval()
 
