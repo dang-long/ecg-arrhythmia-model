@@ -20,3 +20,4 @@ logs/*.csv
 shap/*.png
 plots/*.png
 /data
+.tmp.driveupload
