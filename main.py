@@ -100,14 +100,15 @@ if __name__ == "__main__":
     
     label_csv = os.path.join(data_dir, 'labels.csv') #Modified. Long. 23.Mar.24, original: os.path.join(data_dir, 'labelx.csv')
     
-    train_folds, val_folds, test_folds = split_data(seed=args.seed)
+    # train_folds, val_folds, test_folds = split_data(seed=args.seed)
+    train_folds, val_folds = split_data(seed=args.seed)
     train_dataset = ECGDataset('train', data_dir, label_csv, train_folds, leads)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
     val_dataset = ECGDataset('val', data_dir, label_csv, val_folds, leads)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    net = resnet34(input_channels=nleads).to(device) #Modified. Long. 23.Mar.24, original: resnet50
+    # test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
+    # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+    net = resnet50(input_channels=nleads).to(device) #Modified back. Long. 11.Jul.24, original: resnet50
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)
     
