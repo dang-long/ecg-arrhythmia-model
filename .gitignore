@@ -10,7 +10,6 @@ data/**/*.mat
 data/**/*.hea
 data/**/*.csv
 imgs/*.png
-models/*.pth
 results/*.png
 results/*.csv
 results/*.npy
