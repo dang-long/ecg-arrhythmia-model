@@ -87,13 +87,13 @@ if __name__ == "__main__":
     #additional disease codes are added (processed in lg_process_hea_files.ipynb)
     
     # location of dx_dict file and class_labels file
-    file_dx_name = 'meta_data\dx_dict.json'  # File name to store the dictionary dx_dict    
+    file_dx_name = 'meta_data/dx_dict.json'  # File name to store the dictionary dx_dict    
     dx_dict = dx_dict = load_dictionary_from_file(file_dx_name)
     
     # classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
     
     # classes are added through standard file
-    file_class_name = 'meta_data\class_labels.txt' # File name to store the class labels
+    file_class_name = 'meta_data/class_labels.txt' # File name to store the class labels
     classes = load_class_label_from_file(file_class_name)
 
     parser = argparse.ArgumentParser()

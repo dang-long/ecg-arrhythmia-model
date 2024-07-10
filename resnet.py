@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
-from utils import load_class_label_from_file
+# from utils import load_class_label_from_file
 
 #config for output classes. Long. 21.Apr.24 
-file_class_name = 'meta_data\class_labels.txt' # File name to store the class labels
-classes = load_class_label_from_file(file_class_name)
-no_classes = len(classes)
+# file_class_name = 'meta_data\class_labels.txt' # File name to store the class labels
+# classes = load_class_label_from_file(file_class_name)
+# no_classes = len(classes)
 
 class BasicBlock1d(nn.Module):
     expansion = 1
@@ -77,7 +77,7 @@ class Bottleneck1d(nn.Module):
 
 class ResNet1d(nn.Module):
     # def __init__(self, block, layers, input_channels=12, inplanes=64, num_classes=9):
-    def __init__(self, block, layers, input_channels=12, inplanes=64, num_classes=no_classes): #Modified. Long. 22.Apr.24, original: num_classes=9        
+    def __init__(self, block, layers, input_channels=12, inplanes=64, num_classes=9): #Modified. Long. 22.Apr.24, original: num_classes=9        
         super(ResNet1d, self).__init__()
         self.inplanes = inplanes
         self.conv1 = nn.Conv1d(input_channels, self.inplanes, kernel_size=15, stride=2, padding=7, bias=False)

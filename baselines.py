@@ -53,7 +53,7 @@ if __name__ == "__main__":
     #            'UK26', 'UK27', 'UK28']
 
     #additional classes are added
-    file_class_name = 'meta_data\class_labels.txt' # File name to store the class labels
+    file_class_name = 'meta_data/class_labels.txt' # File name to store the class labels
     classes = load_class_label_from_file(file_class_name)
 
     args = parse_args()
