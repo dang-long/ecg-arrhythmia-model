@@ -84,7 +84,7 @@ if __name__ == "__main__":
     database = os.path.basename(data_dir)
 
     if not args.model_path:
-        args.model_path = f'models/resnet50_{database}_{args.leads}_{args.seed}.pth'
+        args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}.pth'
 
     if args.use_gpu and torch.cuda.is_available():
         device = torch.device('cuda:0')
