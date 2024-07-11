@@ -48,9 +48,9 @@ def cal_f1(y_true, y_score, find_optimal):
         thresholds = np.linspace(0, 1, 100)    
     else:
         thresholds = [0.5]
-    f1s = [f1_score(y_true, y_score > threshold) for threshold in thresholds]
+    #f1s = [f1_score(y_true, y_score > threshold) for threshold in thresholds]
     #handle warning: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no true nor predicted samples. Use `zero_division` parameter to control this behavior.
-    # f1s = [f1_score(y_true, y_score > threshold, zero_division=1) for threshold in thresholds] #Modified, Long, New: 'zero_division=1'  original as comment 21.Apr.24
+    f1s = [f1_score(y_true, y_score > threshold, zero_division=1) for threshold in thresholds] #Modified, Long, New: 'zero_division=1'  original as comment 21.Apr.24
     return np.max(f1s)
 
 

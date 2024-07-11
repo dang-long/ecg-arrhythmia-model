@@ -52,8 +52,13 @@ def evaluate(dataloader, net, args, criterion, device):
     net.eval()
     running_loss = 0
     output_list, labels_list = [], []
+    idx = 1
     for _, (data, labels) in enumerate(tqdm(dataloader)):
         data, labels = data.to(device), labels.to(device)
+        # #print round id and label. Modified. Long. 11.Jul.24
+        # print('Round:', idx, 'Label:', labels, 'Data:', data)
+        # idx += 1
+        # #end of modification
         output = net(data)
         loss = criterion(output, labels)
         running_loss += loss.item()
@@ -62,7 +67,9 @@ def evaluate(dataloader, net, args, criterion, device):
         labels_list.append(labels.data.cpu().numpy())
     print('Loss: %.4f' % running_loss)
     y_trues = np.vstack(labels_list)
+    print(y_trues) #modify to debug. Long. 11.Jul.24
     y_scores = np.vstack(output_list)
+    print(y_scores) #modify to debug. Long. 11.Jul.24
     f1s = cal_f1s(y_trues, y_scores)
     avg_f1 = np.mean(f1s)
     print('F1s:', f1s)
@@ -111,7 +118,9 @@ if __name__ == "__main__":
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
     #Updae test dataset. Modified. Long. 11.Jul.24 Original: test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
     test_dataset = ECGDataset('test', test_data_dir, test_label_csv, np.arange(1, 11), leads)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+    # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+    #update shuffle to True for test_loader. Modified. Long. 11.Jul.24, original: False
     net = resnet34(input_channels=nleads).to(device) #Modified back. Long. 11.Jul.24, original: resnet50
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)
