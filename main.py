@@ -108,18 +108,20 @@ if __name__ == "__main__":
     label_csv = os.path.join(data_dir, 'labels.csv') #Modified. Long. 23.Mar.24, original: os.path.join(data_dir, 'labelx.csv')
     # Introduce new test data
     test_data_dir ='data/test_dataset'
-    test_label_csv = os.path.join(test_data_dir, 'labels.csv')
+    test_label_csv = os.path.join(test_data_dir, 'labels_altered.csv') #check missing class in test set
     
-    # train_folds, val_folds, test_folds = split_data(seed=args.seed)
-    train_folds, val_folds = split_data(seed=args.seed)
+    train_folds, val_folds, test_folds = split_data(seed=args.seed)
+    
+    #train_folds, val_folds = split_data(seed=args.seed)
     train_dataset = ECGDataset('train', data_dir, label_csv, train_folds, leads)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
     val_dataset = ECGDataset('val', data_dir, label_csv, val_folds, leads)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    #Updae test dataset. Modified. Long. 11.Jul.24 Original: test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
-    test_dataset = ECGDataset('test', test_data_dir, test_label_csv, np.arange(1, 11), leads)
-    # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+    #Updae test dataset. Modified. Long. 11.Jul.24 Original: 
+    test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
+    #test_dataset = ECGDataset('test', test_data_dir, test_label_csv, np.arange(1, 11), leads)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+    # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
     #update shuffle to True for test_loader. Modified. Long. 11.Jul.24, original: False
     net = resnet34(input_channels=nleads).to(device) #Modified back. Long. 11.Jul.24, original: resnet50
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)

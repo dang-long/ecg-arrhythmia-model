@@ -8,8 +8,8 @@ import os
 def split_data(seed=42):
     folds = range(1, 11) #from 0 to10
     folds = np.random.RandomState(seed).permutation(folds)
-    # return folds[:8], folds[8:9], folds[9:]
-    return folds[:8], folds[8:] #Modified. Long. 11.Jul.24, 
+    return folds[:8], folds[8:9], folds[9:]
+    # return folds[:8], folds[8:] #Modified. Long. 11.Jul.24, 
                                 #original: return folds[:8], folds[8:9], folds[9:]
                                 #Reason: we only need train (8) and val folds (2), no need for test fold
 
