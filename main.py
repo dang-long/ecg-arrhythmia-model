@@ -64,12 +64,25 @@ def evaluate(dataloader, net, args, criterion, device):
         running_loss += loss.item()
         output = torch.sigmoid(output)
         output_list.append(output.data.cpu().numpy())
+        #print shape of output_list. Modified. Long. 11.Jul.24
+        # print('Shape of output_list:', len(output_list))
         labels_list.append(labels.data.cpu().numpy())
+        #print shape of labels_list. Modified. Long. 11.Jul.24
+        # print('Shape of labels_list:', len(labels_list))
+
     print('Loss: %.4f' % running_loss)
     y_trues = np.vstack(labels_list)
-    print(y_trues) #modify to debug. Long. 11.Jul.24
+    #store y_trues to a file. Modified. Long. 11.Jul.24
+    #np.savetxt('y_trues_org.txt', y_trues, fmt='%d')
+
+    #print shape of y_trues. Modified. Long. 11.Jul.24
+    print('Shape of y_trues:', y_trues.shape)
     y_scores = np.vstack(output_list)
-    print(y_scores) #modify to debug. Long. 11.Jul.24
+    #store y_scores to a file. Modified. Long. 11.Jul.24
+    #np.savetxt('y_scores_org.txt', y_scores, fmt='%f')
+    #print shape of y_scores. Modified. Long. 11.Jul.24
+    print('Shape of y_scores:', y_scores.shape)
+
     f1s = cal_f1s(y_trues, y_scores)
     avg_f1 = np.mean(f1s)
     print('F1s:', f1s)
@@ -110,19 +123,24 @@ if __name__ == "__main__":
     test_data_dir ='data/test_dataset'
     test_label_csv = os.path.join(test_data_dir, 'labels_altered.csv') #check missing class in test set
     
-    train_folds, val_folds, test_folds = split_data(seed=args.seed)
-    
-    #train_folds, val_folds = split_data(seed=args.seed)
+    #train_folds, val_folds, test_folds = split_data(seed=args.seed)
+    train_folds, val_folds = split_data(seed=args.seed)
+    test_folds = np.arange(1, 11)
+
     train_dataset = ECGDataset('train', data_dir, label_csv, train_folds, leads)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
     val_dataset = ECGDataset('val', data_dir, label_csv, val_folds, leads)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+    
     #Updae test dataset. Modified. Long. 11.Jul.24 Original: 
-    test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
-    #test_dataset = ECGDataset('test', test_data_dir, test_label_csv, np.arange(1, 11), leads)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+    
+    # test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
+    test_dataset = ECGDataset('test', test_data_dir, test_label_csv, test_folds, leads)
+    
+    # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
     #update shuffle to True for test_loader. Modified. Long. 11.Jul.24, original: False
+    
     net = resnet34(input_channels=nleads).to(device) #Modified back. Long. 11.Jul.24, original: resnet50
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)
