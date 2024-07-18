@@ -121,9 +121,9 @@ if __name__ == "__main__":
     label_csv = os.path.join(data_dir, 'labels.csv') #Modified. Long. 23.Mar.24, original: os.path.join(data_dir, 'labelx.csv')
     # Introduce new test data
     test_data_dir ='data/test_dataset'
-    test_label_csv = os.path.join(test_data_dir, 'labels_altered.csv') #check missing class in test set
+    test_label_csv = os.path.join(test_data_dir, 'labels.csv') #mod to handle missing class in test set
     
-    #train_folds, val_folds, test_folds = split_data(seed=args.seed)
+    # train_folds, val_folds, test_folds = split_data(seed=args.seed)
     train_folds, val_folds = split_data(seed=args.seed)
     test_folds = np.arange(1, 11)
 
@@ -138,9 +138,8 @@ if __name__ == "__main__":
     test_dataset = ECGDataset('test', test_data_dir, test_label_csv, test_folds, leads)
     
     # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
-    #update shuffle to True for test_loader. Modified. Long. 11.Jul.24, original: False
-    
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+        
     net = resnet34(input_channels=nleads).to(device) #Modified back. Long. 11.Jul.24, original: resnet50
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)
