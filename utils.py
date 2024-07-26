@@ -95,14 +95,14 @@ def load_class_label_from_file(filename):
 
 # function to move files .hea and .mat from one folder to another. 
 # for combination dataset, we need to move files from source folder to destination folder 
-#Files name are extracted from 1st column of df
-def move_files(df, source_folder, dest_folder):
-    for index, row in df.iterrows():
-        #get each file name from the 1st column of df
-        file_name = row[0]
-        #for each file name, append '.hea' and '.mat' to the file name, and move the files, one by one
-        for ext in ['.hea', '.mat']:
-            src_file = os.path.join(source_folder, file_name + ext)
-            dest_file = os.path.join(dest_folder, file_name + ext)
-            shutil.move(src_file, dest_file)
-    print('Done moving files')
+# #Files name are extracted from 1st column of df
+# def move_files(df, source_folder, dest_folder):
+#     for index, row in df.iterrows():
+#         #get each file name from the 1st column of df
+#         file_name = row[0]
+#         #for each file name, append '.hea' and '.mat' to the file name, and move the files, one by one
+#         for ext in ['.hea', '.mat']:
+#             src_file = os.path.join(source_folder, file_name + ext)
+#             dest_file = os.path.join(dest_folder, file_name + ext)
+#             shutil.move(src_file, dest_file)
+#     print('Done moving files')
