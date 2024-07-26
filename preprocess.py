@@ -5,7 +5,7 @@ import pandas as pd
 from glob import glob
 import argparse
 import os
-from utils import load_dictionary_from_file, load_class_label_from_file, move_files
+# from utils import load_dictionary_from_file, load_class_label_from_file
 
 #handle split_path in Windows or Linux
 split_type = os.path.sep #newly added. Long. 23.Mar.24
