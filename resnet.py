@@ -136,3 +136,4 @@ def resnet34(**kwargs):
 
 def resnet50(**kwargs):
     model = ResNet1d(Bottleneck1d, [3, 4, 6, 3], **kwargs)
+    return model
