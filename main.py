@@ -14,6 +14,7 @@ from utils import cal_f1s, cal_aucs, split_data
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data-dir', type=str, default='data/CPSC', help='Directory for data dir')
+    parser.add_argument('--test-dir', type=str, default='', help='Directory for test dataset')
     parser.add_argument('--leads', type=str, default='all', help='ECG leads to use')
     parser.add_argument('--seed', type=int, default=42, help='Seed to split data')
     parser.add_argument('--num-classes', type=int, default=int, help='Num of diagnostic classes')
@@ -101,10 +102,22 @@ if __name__ == "__main__":
     args = parse_args()
     args.best_metric = 0
     data_dir = os.path.normpath(args.data_dir)
+    
     database = os.path.basename(data_dir)
+    num_classes = args.num_classes
+
+    # Introduce new test data
+    test_dir = os.path.normpath(args.test_dir)
+    test_label_csv = os.path.join(test_dir, f'labels_{args.num_classes}_classes.csv') #mod to handle missing class in test set
+
+    if num_classes != 8:          
+        classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+    else:
+        classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'STD', 'STE'] #removed 'PVC' as it is not existed in the test set
 
     if not args.model_path:
-        args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}.pth'
+        # args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}.pth'
+        args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.pth'
 
     if args.use_gpu and torch.cuda.is_available():
         device = torch.device('cuda:0')
@@ -118,28 +131,29 @@ if __name__ == "__main__":
         leads = args.leads.split(',')
         nleads = len(leads)
     
-    label_csv = os.path.join(data_dir, 'labels.csv') #Modified. Long. 23.Mar.24, original: os.path.join(data_dir, 'labelx.csv')
-    # Introduce new test data
-    test_data_dir ='data/test_dataset'
-    test_label_csv = os.path.join(test_data_dir, 'labels.csv') #mod to handle missing class in test set
+    label_csv = os.path.join(data_dir, f'labels_{args.num_classes}_classes.csv') #Modified. Long. 23.Mar.24, original: os.path.join(data_dir, 'labelx.csv')
+       
+    #if test_dir is not provided, use the same training data for validation and test
+    #split those by fold number. Modified. Long. 30.Jul.24
+    if args.test_dir == '':
+        train_folds, val_folds, test_folds = split_data(seed=args.seed)
+        test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
+        test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+
+    else:
+        train_folds, val_folds, test_folds = split_data(seed=args.seed)
+        val_folds += test_folds
+        print('Validation folds:', val_folds)
+        test_folds = np.arange(1, 11)
+        test_dataset = ECGDataset('test', test_dir, test_label_csv, test_folds, leads)
+        test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
     
-    # train_folds, val_folds, test_folds = split_data(seed=args.seed)
-    train_folds, val_folds = split_data(seed=args.seed)
-    test_folds = np.arange(1, 11)
 
     train_dataset = ECGDataset('train', data_dir, label_csv, train_folds, leads)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
     val_dataset = ECGDataset('val', data_dir, label_csv, val_folds, leads)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    
-    #Updae test dataset. Modified. Long. 11.Jul.24 Original: 
-    
-    # test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
-    test_dataset = ECGDataset('test', test_data_dir, test_label_csv, test_folds, leads)
-    
-    # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-        
+           
     net = resnet34(input_channels=nleads).to(device) #Modified back. Long. 11.Jul.24, original: resnet50
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)

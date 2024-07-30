@@ -26,6 +26,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data-dir', type=str, default='./data/CPSC', help='Data directory')
     parser.add_argument('--classifier', type=str, default='all', help='Classifier to use: LR, RF, LGB, or MLP')
+    parser.add_argument('--num-classes', type=int, default=9, help='Num of diagnostic classes')
     parser.add_argument('--seed', type=int, default=42, help='Seed to split data')
     return parser.parse_args()
 
@@ -43,24 +44,18 @@ def generate_features_csv(features_csv, data_dir, patient_ids):
 
 
 if __name__ == "__main__":
-    # classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
-    
-    #handle extra classes, from preprocesse.py. Long. 21.Apr.24
-    # classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',
-    #            'UK1', 'UK2', 'UK3', 'UK4', 'UK5', 'UK6', 'UK7', 'UK8', 'UK9',
-    #            'UK10', 'UK11', 'UK12', 'UK13', 'UK14', 'UK15', 'UK16', 'UK17',
-    #            'UK18', 'UK19', 'UK20', 'UK21', 'UK22', 'UK23', 'UK24', 'UK25',
-    #            'UK26', 'UK27', 'UK28']
-
-    #additional classes are added
-    file_class_name = 'meta_data/class_labels.txt' # File name to store the class labels
-    classes = load_class_label_from_file(file_class_name)
-
     args = parse_args()
     data_dir = args.data_dir
     classifier = args.classifier
-    features_csv = os.path.join(data_dir, 'features.csv')
-    labels_csv = os.path.join(data_dir, 'labels.csv')
+    num_classes = args.num_classes
+
+    if num_classes != 8:          
+        classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+    else:
+        classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'STD', 'STE'] #removed 'PVC' as it is not existed in the test set
+
+    features_csv = os.path.join(data_dir, f'features_{args.num_classes}_classes.csv')
+    labels_csv = os.path.join(data_dir, f'labels_{args.num_classes}_classes.csv')
     print(labels_csv)
     df_labels = pd.read_csv(labels_csv)
     patient_ids = df_labels['patient_id'].tolist()
