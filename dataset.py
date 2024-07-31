@@ -42,18 +42,10 @@ class ECGDataset(Dataset):
         else:
             self.use_leads = np.where(np.in1d(self.leads, leads))[0]
         self.nleads = len(self.use_leads)
-        self.classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
-        
-        #handle extra classes, from preprocesse.py. Long. 21.Apr.24
-        # self.classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',
-        #        'UK1', 'UK2', 'UK3', 'UK4', 'UK5', 'UK6', 'UK7', 'UK8', 'UK9',
-        #        'UK10', 'UK11', 'UK12', 'UK13', 'UK14', 'UK15', 'UK16', 'UK17',
-        #        'UK18', 'UK19', 'UK20', 'UK21', 'UK22', 'UK23', 'UK24', 'UK25',
-        #        'UK26', 'UK27', 'UK28']     
-
-            #additional classes are added. 21.Apr.24
-        # file_class_name = 'meta_data\class_labels.txt' # File name to store the class labels
-        # self.classes = load_class_label_from_file(file_class_name)
+        # self.classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
+        # get self.classes from the label_csv, instead of hardcoding. Modified. Long. 31.07.24
+        self.classes = df.columns[1:-1]
+        # print('Classes:', self.classes)        
 
         self.n_classes = len(self.classes)
         self.data_dict = {}

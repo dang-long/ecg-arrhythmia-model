@@ -35,7 +35,8 @@ def train(dataloader, net, args, criterion, epoch, scheduler, optimizer, device)
     running_loss = 0
     output_list, labels_list = [], []
     for _, (data, labels) in enumerate(tqdm(dataloader)):
-        data, labels = data.to(device), labels.to(device)
+        # print('Round:', idx, 'Label:', labels, 'Data:', data)
+        data, labels = data.to(device), labels.to(device)        
         output = net(data)
         loss = criterion(output, labels)
         optimizer.zero_grad()
@@ -150,11 +151,11 @@ if __name__ == "__main__":
     
 
     train_dataset = ECGDataset('train', data_dir, label_csv, train_folds, leads)
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
     val_dataset = ECGDataset('val', data_dir, label_csv, val_folds, leads)
     val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
            
-    net = resnet34(input_channels=nleads).to(device) #Modified back. Long. 11.Jul.24, original: resnet50
+    net = resnet34(input_channels=nleads,num_classes=num_classes).to(device) #Modified. Long. 31.Jul.24, original: resnet50, without num_classes argument
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)
     
