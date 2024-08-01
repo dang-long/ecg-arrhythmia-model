@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('--num-workers', type=int, default=4, help='Num of workers to load data')
     parser.add_argument('--phase', type=str, default='train', help='Phase: train or test')
     parser.add_argument('--epochs', type=int, default=40, help='Training epochs')
-    parser.add_argument('--resume', default=False, action='store_true', help='Resume')
+    parser.add_argument('--resume', default=True, action='store_true', help='Resume') #Modified. Long. 31.Jul.24, original: False
     parser.add_argument('--use-gpu', default=False, action='store_true', help='Use GPU')
     parser.add_argument('--model-path', type=str, default='', help='Path to saved model')
     return parser.parse_args()
@@ -100,6 +100,7 @@ def evaluate(dataloader, net, args, criterion, device):
 
 
 if __name__ == "__main__":
+    __spec__ = None #Added. Long. 31.Jul.24
     args = parse_args()
     args.best_metric = 0
     data_dir = os.path.normpath(args.data_dir)
