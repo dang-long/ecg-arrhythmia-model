@@ -20,3 +20,4 @@ shap/*.png
 plots/*.png
 /data
 .tmp.driveupload/*
+.private_libs/*
