@@ -9,6 +9,9 @@ import numpy as np
 from dataset import ECGDataset
 from resnet import resnet34, resnet50
 from utils import cal_f1s, cal_aucs, split_data
+import matplotlib.pyplot as plt #Add new Long. 12.08.24
+import time #Add new Long. 12.08.24
+
 
 
 def parse_args():
@@ -51,52 +54,97 @@ def train(dataloader, net, args, criterion, epoch, scheduler, optimizer, device)
 
 def evaluate(dataloader, net, args, criterion, device):
     print('Validating...')
-    net.eval()
-    running_loss = 0
-    output_list, labels_list = [], []
-    idx = 1
-    for _, (data, labels) in enumerate(tqdm(dataloader)):
-        data, labels = data.to(device), labels.to(device)
-        # #print round id and label. Modified. Long. 11.Jul.24
-        # print('Round:', idx, 'Label:', labels, 'Data:', data)
-        # idx += 1
-        # #end of modification
-        output = net(data)
-        loss = criterion(output, labels)
-        running_loss += loss.item()
-        output = torch.sigmoid(output)
-        output_list.append(output.data.cpu().numpy())
-        #print shape of output_list. Modified. Long. 11.Jul.24
-        # print('Shape of output_list:', len(output_list))
-        labels_list.append(labels.data.cpu().numpy())
-        #print shape of labels_list. Modified. Long. 11.Jul.24
-        # print('Shape of labels_list:', len(labels_list))
+    #Store result to file for presentation
+    # Open a file to write the loss values
+    log_file =  f'logs/resnet34_{database}_{args.leads}_{args.seed}_{args.num_classes}_log.txt'
+    with open(log_file, 'w') as f:
 
-    print('Loss: %.4f' % running_loss)
-    y_trues = np.vstack(labels_list)
-    #store y_trues to a file. Modified. Long. 11.Jul.24
-    #np.savetxt('y_trues_org.txt', y_trues, fmt='%d')
+        net.eval()
+        running_loss = 0
+        output_list, labels_list = [], []
+        idx = 1
+        for _, (data, labels) in enumerate(tqdm(dataloader)):
+            data, labels = data.to(device), labels.to(device)
+            # #print round id and label. Modified. Long. 11.Jul.24
+            # print('Round:', idx, 'Label:', labels, 'Data:', data)
+            # idx += 1
+            # #end of modification
+            output = net(data)
+            loss = criterion(output, labels)
+            running_loss += loss.item()
+            output = torch.sigmoid(output)
+            output_list.append(output.data.cpu().numpy())
+            #print shape of output_list. Modified. Long. 11.Jul.24
+            # print('Shape of output_list:', len(output_list))
+            labels_list.append(labels.data.cpu().numpy())
+            #print shape of labels_list. Modified. Long. 11.Jul.24
+            # print('Shape of labels_list:', len(labels_list))
 
-    #print shape of y_trues. Modified. Long. 11.Jul.24
-    print('Shape of y_trues:', y_trues.shape)
-    y_scores = np.vstack(output_list)
-    #store y_scores to a file. Modified. Long. 11.Jul.24
-    #np.savetxt('y_scores_org.txt', y_scores, fmt='%f')
-    #print shape of y_scores. Modified. Long. 11.Jul.24
-    print('Shape of y_scores:', y_scores.shape)
+        print('Loss: %.4f' % running_loss)
+        #Store values to log file. Newly added. Long 12.08.24
+        f.write(f'Loss Epoch: {epoch} = {running_loss:.4f}\n')
+        
 
-    f1s = cal_f1s(y_trues, y_scores)
-    avg_f1 = np.mean(f1s)
-    print('F1s:', f1s)
-    print('Avg F1: %.4f' % avg_f1)
-    if args.phase == 'train' and avg_f1 > args.best_metric:
-        args.best_metric = avg_f1
-        torch.save(net.state_dict(), args.model_path)
-    else:
-        aucs = cal_aucs(y_trues, y_scores)
-        avg_auc = np.mean(aucs)
-        print('AUCs:', aucs)
-        print('Avg AUC: %.4f' % avg_auc)
+        y_trues = np.vstack(labels_list)
+        #store y_trues to a file. Modified. Long. 11.Jul.24
+        #np.savetxt('y_trues_org.txt', y_trues, fmt='%d')
+
+        #print shape of y_trues. Modified. Long. 11.Jul.24
+        print('Shape of y_trues:', y_trues.shape)
+        y_scores = np.vstack(output_list)
+        #store y_scores to a file. Modified. Long. 11.Jul.24
+        #np.savetxt('y_scores_org.txt', y_scores, fmt='%f')
+        #print shape of y_scores. Modified. Long. 11.Jul.24
+        print('Shape of y_scores:', y_scores.shape)
+
+        f1s = cal_f1s(y_trues, y_scores)
+        avg_f1 = np.mean(f1s)
+        print('F1s:', f1s)
+        print('Avg F1: %.4f' % avg_f1)
+        #Store values to log file. Newly added. Long 12.08.24
+        f.write(f'F1 Epoch {epoch}: ')        
+        for val in f1s:
+            f.write(f'{val:.4f} ')  # Format the number to 4 decimal places   
+        f.write('\n')
+        f.write(f'Avg F1 at Epoch {epoch} = {avg_f1:.4f}\n')
+        
+        #Original commented block
+
+        # if args.phase == 'train' and avg_f1 > args.best_metric:
+        #     args.best_metric = avg_f1
+        #     torch.save(net.state_dict(), args.model_path)
+        # else:
+        #     aucs = cal_aucs(y_trues, y_scores)
+        #     avg_auc = np.mean(aucs)
+        #     print('AUCs:', aucs)
+        #     print('Avg AUC: %.4f' % avg_auc)
+
+        #Newly change. Long 12.08.24. Handle both Avg and avg AUC in validation
+        #start. adding block
+        if args.phase == 'train' and avg_f1 > args.best_metric:
+            args.best_metric = avg_f1
+            torch.save(net.state_dict(), args.model_path)
+            aucs = cal_aucs(y_trues, y_scores)
+            avg_auc = np.mean(aucs)
+            print('AUCs:', aucs)
+            print('Epoch with Best Avg F1 = %.4f' % avg_f1)
+            print('Avg AUC: %.4f' % avg_auc)
+        else:
+            aucs = cal_aucs(y_trues, y_scores)
+            avg_auc = np.mean(aucs)
+            print('AUCs:', aucs)
+            print('Avg AUC: %.4f' % avg_auc)
+
+        #Store values to log file. Newly added. Long 12.08.24
+        f.write(f'AUC Epoch {epoch}: ')        
+        for val in aucs:
+            f.write(f'{val:.4f} ')  # Format the number to 4 decimal places   
+        f.write('\n')
+        f.write(f'Avg AUC at Epoch {epoch} = {avg_auc:.4f}\n')
+        #end. adding block
+
+    return running_loss, avg_f1, avg_auc
+
 
 
 if __name__ == "__main__":
@@ -138,14 +186,14 @@ if __name__ == "__main__":
     #if test_dir is not provided, use the same training data for validation and test
     #split those by fold number. Modified. Long. 30.Jul.24
     if args.test_dir == '':
-        train_folds, val_folds, test_folds = split_data(seed=args.seed)
-        test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
-        test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+        train_folds, val_folds = split_data(seed=args.seed)
+        #remove test folds, as unused in training
+        # test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
+        # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
     else:
-        train_folds, val_folds, test_folds = split_data(seed=args.seed)
-        val_folds += test_folds
-        print('Validation folds:', val_folds)
+        train_folds, val_folds = split_data(seed=args.seed)
+        # print('Validation folds:', val_folds)
         test_folds = np.arange(1, 11)
         test_dataset = ECGDataset('test', test_dir, test_label_csv, test_folds, leads)
         test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
@@ -161,13 +209,58 @@ if __name__ == "__main__":
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, gamma=0.1)
     
     criterion = nn.BCEWithLogitsLoss()
+
+    epoch_losses = []
+    epoch_avg_F1 = []
+    epoch_avg_AUC = []
     
     if args.phase == 'train':
         if args.resume:
             net.load_state_dict(torch.load(args.model_path, map_location=device))
         for epoch in range(args.epochs):
             train(train_loader, net, args, criterion, epoch, scheduler, optimizer, device)
-            evaluate(val_loader, net, args, criterion, device)
+            e_loss, e_avg_f1, e_avg_auc = evaluate(val_loader, net, args, criterion, device)
+            # Append the loss for this epoch to the list
+            epoch_losses.append(e_loss) #Add. Long 12.08.24
+            # Append the avg F1 for this epoch to the list
+            epoch_avg_F1.append(e_avg_f1) #Add. Long 12.08.24
+            # Append the avg AUC for this epoch to the list
+            epoch_avg_AUC.append(e_avg_auc) #Add. Long 12.08.24
     else:
         net.load_state_dict(torch.load(args.model_path, map_location=device))
-        evaluate(test_loader, net, args, criterion, device)
+        running_loss, avg_f1, avg_auc = evaluate(test_loader, net, args, criterion, device)
+        # Append the loss for this epoch to the list
+        epoch_losses.append(running_loss) #Add. Long 12.08.24
+        # Append the avg F1 for this epoch to the list
+        epoch_avg_F1.append(avg_f1) #Add. Long 12.08.24
+        # Append the avg AUC for this epoch to the list
+        epoch_avg_AUC.append(avg_auc) #Add. Long 12.08.24
+
+    #Add new by Long. 12.08.24
+
+    # Plot the loss/f1/auc over epochs
+    plt.plot(range(0, args.epochs), epoch_losses, marker='o')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss Over Epochs')
+    plt.savefig(f'imgs/loss_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
+
+    # Clear the current figure
+    time.sleep(1)
+    plt.clf()
+    plt.plot(range(0, args.epochs), epoch_avg_F1, marker='o')
+    plt.xlabel('Epoch')
+    plt.ylabel('Avg F1')
+    plt.title('Avg F1 Change over Epochs')
+    plt.savefig(f'imgs/avg_F1_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
+
+    # Clear the current figure
+    time.sleep(1)
+    plt.clf()
+    plt.plot(range(0, args.epochs), epoch_avg_AUC, marker='o')
+    plt.xlabel('Epoch')
+    plt.ylabel('Avg AUC')
+    plt.title('Avg AUC Change over Epochs')
+    plt.savefig(f'imgs/avg_auc_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
+
+
