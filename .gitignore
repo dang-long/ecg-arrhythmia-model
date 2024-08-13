@@ -9,7 +9,6 @@ data/CPSC
 data/**/*.mat
 data/**/*.hea
 data/**/*.csv
-imgs/*.png
 results/*.png
 results/*.csv
 results/*.npy
@@ -17,7 +16,6 @@ logs/ecg-*
 logs/*.log
 logs/*.csv
 shap/*.png
-plots/*.png
 /data
 .tmp.driveupload/*
 .private_libs/*
