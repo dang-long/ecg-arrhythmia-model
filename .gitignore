@@ -1,14 +1,7 @@
 .vscode
 __pycache__
-
 *.bak
-data/*.*
 data/*
-data/**/
-data/CPSC
-data/**/*.mat
-data/**/*.hea
-data/**/*.csv
 results/*.png
 results/*.csv
 results/*.npy
@@ -16,6 +9,6 @@ logs/ecg-*
 logs/*.log
 logs/*.csv
 shap/*.png
-/data
 .tmp.driveupload/*
 .private_libs/*
+.ipynb_checkpoints
