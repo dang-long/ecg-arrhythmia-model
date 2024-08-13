@@ -54,6 +54,10 @@ def train(dataloader, net, args, criterion, epoch, scheduler, optimizer, device)
 
 def evaluate(dataloader, net, args, criterion, device):
     print('Validating...')
+    #get labels name from dataloader. Modified. Long. 11.Jul.24
+    print('Labels:', dataloader.dataset.labels)    
+
+
     #Store result to file for presentation
     # Open a file to write the loss values
     log_file =  f'logs/resnet34_{database}_{args.leads}_{args.seed}_{args.num_classes}_log.txt'
