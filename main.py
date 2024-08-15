@@ -54,15 +54,13 @@ def train(dataloader, net, args, criterion, epoch, scheduler, optimizer, device)
 
 def evaluate(dataloader, net, args, criterion, device):
     print('Validating...')
-    #get labels name from dataloader. Modified. Long. 11.Jul.24
-    print('Labels:', dataloader.dataset.labels)    
-
-
+    # #get labels name from dataloader. Modified. Long. 11.Jul.24
+    # print('Labels:', dataloader.dataset.labels)    
+    print('Model in-used: ', args.model_path)
     #Store result to file for presentation
     # Open a file to write the loss values
-    log_file =  f'logs/resnet34_{database}_{args.leads}_{args.seed}_{args.num_classes}_log.txt'
+    log_file =  f'logs/resnet34_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_log.txt'
     with open(log_file, 'w') as f:
-
         net.eval()
         running_loss = 0
         output_list, labels_list = [], []
@@ -86,8 +84,10 @@ def evaluate(dataloader, net, args, criterion, device):
 
         print('Loss: %.4f' % running_loss)
         #Store values to log file. Newly added. Long 12.08.24
-        f.write(f'Loss Epoch: {epoch} = {running_loss:.4f}\n')
-        
+        if args.phase == 'train':
+            f.write(f'Loss Epoch: {epoch} = {running_loss:.4f}\n')
+        else:
+            f.write(f'Loss TEST: = {running_loss:.4f}\n')
 
         y_trues = np.vstack(labels_list)
         #store y_trues to a file. Modified. Long. 11.Jul.24
@@ -106,11 +106,14 @@ def evaluate(dataloader, net, args, criterion, device):
         print('F1s:', f1s)
         print('Avg F1: %.4f' % avg_f1)
         #Store values to log file. Newly added. Long 12.08.24
-        f.write(f'F1 Epoch {epoch}: ')        
+        if args.phase == 'train':
+            f.write(f'F1 Epoch {epoch}: ')   
+        else:
+            f.write(f'F1 TEST: ')      
         for val in f1s:
             f.write(f'{val:.4f} ')  # Format the number to 4 decimal places   
         f.write('\n')
-        f.write(f'Avg F1 at Epoch {epoch} = {avg_f1:.4f}\n')
+        f.write(f'Avg F1 = {avg_f1:.4f}\n')
         
         #Original commented block
 
@@ -140,11 +143,14 @@ def evaluate(dataloader, net, args, criterion, device):
             print('Avg AUC: %.4f' % avg_auc)
 
         #Store values to log file. Newly added. Long 12.08.24
-        f.write(f'AUC Epoch {epoch}: ')        
+        if args.phase == 'train':
+            f.write(f'AUC Epoch {epoch}: ')  
+        else:
+            f.write(f'AUC TEST: ')      
         for val in aucs:
             f.write(f'{val:.4f} ')  # Format the number to 4 decimal places   
         f.write('\n')
-        f.write(f'Avg AUC at Epoch {epoch} = {avg_auc:.4f}\n')
+        f.write(f'Avg AUC = {avg_auc:.4f}\n')
         #end. adding block
 
     return running_loss, avg_f1, avg_auc
@@ -232,39 +238,34 @@ if __name__ == "__main__":
             epoch_avg_AUC.append(e_avg_auc) #Add. Long 12.08.24
     else:
         net.load_state_dict(torch.load(args.model_path, map_location=device))
-        running_loss, avg_f1, avg_auc = evaluate(test_loader, net, args, criterion, device)
-        # Append the loss for this epoch to the list
-        epoch_losses.append(running_loss) #Add. Long 12.08.24
-        # Append the avg F1 for this epoch to the list
-        epoch_avg_F1.append(avg_f1) #Add. Long 12.08.24
-        # Append the avg AUC for this epoch to the list
-        epoch_avg_AUC.append(avg_auc) #Add. Long 12.08.24
+        e_loss, e_avg_f1, e_avg_auc = evaluate(test_loader, net, args, criterion, device)
+
 
     #Add new by Long. 12.08.24
+    if args.phase == 'train':
+        # Plot the loss/f1/auc over epochs
+        plt.plot(range(0, args.epochs), epoch_losses, marker='o')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.title('Loss Over Epochs')
+        plt.savefig(f'imgs/loss_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
 
-    # Plot the loss/f1/auc over epochs
-    plt.plot(range(0, args.epochs), epoch_losses, marker='o')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.title('Loss Over Epochs')
-    plt.savefig(f'imgs/loss_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
+        # Clear the current figure
+        time.sleep(1)
+        plt.clf()
+        plt.plot(range(0, args.epochs), epoch_avg_F1, marker='o')
+        plt.xlabel('Epoch')
+        plt.ylabel('Avg F1')
+        plt.title('Avg F1 Change over Epochs')
+        plt.savefig(f'imgs/avg_F1_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
 
-    # Clear the current figure
-    time.sleep(1)
-    plt.clf()
-    plt.plot(range(0, args.epochs), epoch_avg_F1, marker='o')
-    plt.xlabel('Epoch')
-    plt.ylabel('Avg F1')
-    plt.title('Avg F1 Change over Epochs')
-    plt.savefig(f'imgs/avg_F1_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
-
-    # Clear the current figure
-    time.sleep(1)
-    plt.clf()
-    plt.plot(range(0, args.epochs), epoch_avg_AUC, marker='o')
-    plt.xlabel('Epoch')
-    plt.ylabel('Avg AUC')
-    plt.title('Avg AUC Change over Epochs')
-    plt.savefig(f'imgs/avg_auc_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
+        # Clear the current figure
+        time.sleep(1)
+        plt.clf()
+        plt.plot(range(0, args.epochs), epoch_avg_AUC, marker='o')
+        plt.xlabel('Epoch')
+        plt.ylabel('Avg AUC')
+        plt.title('Avg AUC Change over Epochs')
+        plt.savefig(f'imgs/avg_auc_changes_{args.phase}_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.png')
 
 
