@@ -15,7 +15,7 @@ from sklearn.metrics import f1_score
 from tqdm import tqdm
 import wfdb
 
-from utils import split_data, find_optimal_threshold,load_class_label_from_file #newly added. Long. 21.Apr.24
+from utils import split_data, find_optimal_threshold
 from expert_features import extract_features
 
 warnings.filterwarnings('ignore', category=FutureWarning)
