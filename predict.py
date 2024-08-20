@@ -52,13 +52,7 @@ def get_thresholds(val_loader, net, device, threshold_path):
 
 def apply_thresholds(test_loader, net, device, thresholds):
     output_list, label_list = [], []
-    classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
-    #handle extra classes, from preprocesse.py. Long. 21.Apr.24
-    # classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE',
-    #            'UK1', 'UK2', 'UK3', 'UK4', 'UK5', 'UK6', 'UK7', 'UK8', 'UK9',
-    #            'UK10', 'UK11', 'UK12', 'UK13', 'UK14', 'UK15', 'UK16', 'UK17',
-    #            'UK18', 'UK19', 'UK20', 'UK21', 'UK22', 'UK23', 'UK24', 'UK25',
-    #            'UK26', 'UK27', 'UK28']    
+    classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']  
     for _, (data, label) in enumerate(tqdm(test_loader)):
         data, labels = data.to(device), label.to(device)
         output = net(data)

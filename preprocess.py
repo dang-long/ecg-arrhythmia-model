@@ -54,18 +54,9 @@ def gen_label_csv(label_csv, reference_csv, dx_dict, classes):
         df['fold'] = np.random.permutation(folds)
         columns = df.columns
 
-        #only keep records exist in classes list. Long. 05.May.24
-        # df['keep'] = df[classes].sum(axis=1) 
-        # df = df[df['keep'] > 0]
-        # #print number of keep records, number of results, percentage of keep records vs results
-        # print('Number of keep records:', len(df), 
-        #       'Number of results:', len(results), 
-        #       'Percentage of keep records:', len(df)/len(results)*100)       
+           
         df[columns].to_csv(label_csv, index=None)
-        #move files to the destination folder
-        #destination folder:
-        # des_dir = 'data/test_dataset'
-        # move_files(df, data_dir, des_dir)
+        
 
 
 if __name__ == "__main__":
@@ -107,7 +98,7 @@ if __name__ == "__main__":
             '59118001': 'RBBB', # Right bundle branch block
             '284470004': 'PAC', # Premature atrial contraction
             '63593006': 'PAC', # Supraventricular premature beats
-            # '164884008': 'PVC', # Ventricular ectopics
+            # PVC removed as it is not existed in the test set
             '429622005': 'STD', # ST-segment depression
             '164931005': 'STE', # ST-segment elevation
         }

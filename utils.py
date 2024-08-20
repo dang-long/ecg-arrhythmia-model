@@ -67,33 +67,33 @@ def cal_f1s(y_trues, y_scores, find_optimal=True):
 def cal_aucs(y_trues, y_scores):
     return roc_auc_score(y_trues, y_scores, average=None)
 
-#Long add extra function
-import json
+# #Long add extra function
+# import json
 
-# Function to load dictionary from file
-def load_dictionary_from_file(filename):
-    with open(filename, 'r') as file:
-        dictionary = json.load(file)
-    return dictionary
+# # Function to load dictionary from file
+# def load_dictionary_from_file(filename):
+#     with open(filename, 'r') as file:
+#         dictionary = json.load(file)
+#     return dictionary
 
-# Function to store dictionary to file
-def store_dictionary_to_file(dictionary, filename):
-    with open(filename, 'w') as file:
-        json.dump(dictionary, file)
+# # Function to store dictionary to file
+# def store_dictionary_to_file(dictionary, filename):
+#     with open(filename, 'w') as file:
+#         json.dump(dictionary, file)
 
-#function to store unique values to file
-def store_class_label_to_file(values, filename):
-    with open(filename, 'w') as file:
-        for value in values:
-            file.write(value + '\n')
+# #function to store unique values to file
+# def store_class_label_to_file(values, filename):
+#     with open(filename, 'w') as file:
+#         for value in values:
+#             file.write(value + '\n')
 
-#function to load unique values from file and store in a list
-def load_class_label_from_file(filename):
-    class_label = []
-    with open(filename, 'r') as file:
-        for line in file:
-            class_label.append(line.strip())
-    return class_label
+# #function to load unique values from file and store in a list
+# def load_class_label_from_file(filename):
+#     class_label = []
+#     with open(filename, 'r') as file:
+#         for line in file:
+#             class_label.append(line.strip())
+#     return class_label
 
 # function to move files .hea and .mat from one folder to another. 
 # for combination dataset, we need to move files from source folder to destination folder 

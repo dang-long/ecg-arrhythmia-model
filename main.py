@@ -17,7 +17,7 @@ import time #Add new Long. 12.08.24
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data-dir', type=str, default='data/CPSC', help='Directory for data dir')
-    parser.add_argument('--test-dir', type=str, default='', help='Directory for test dataset')
+    parser.add_argument('--test-dir', type=str, default='', help='Directory for test dataset') #Add new. Long. 30.Jul.24
     parser.add_argument('--leads', type=str, default='all', help='ECG leads to use')
     parser.add_argument('--seed', type=int, default=42, help='Seed to split data')
     parser.add_argument('--num-classes', type=int, default=int, help='Num of diagnostic classes')
@@ -37,8 +37,7 @@ def train(dataloader, net, args, criterion, epoch, scheduler, optimizer, device)
     net.train()
     running_loss = 0
     output_list, labels_list = [], []
-    for _, (data, labels) in enumerate(tqdm(dataloader)):
-        # print('Round:', idx, 'Label:', labels, 'Data:', data)
+    for _, (data, labels) in enumerate(tqdm(dataloader)):        
         data, labels = data.to(device), labels.to(device)        
         output = net(data)
         loss = criterion(output, labels)
@@ -47,15 +46,12 @@ def train(dataloader, net, args, criterion, epoch, scheduler, optimizer, device)
         optimizer.step()
         running_loss += loss.item()
         output_list.append(output.data.cpu().numpy())
-        labels_list.append(labels.data.cpu().numpy())
-    # scheduler.step()
+        labels_list.append(labels.data.cpu().numpy())    
     print('Loss: %.4f' % running_loss)
     
 
 def evaluate(dataloader, net, args, criterion, device):
-    print('Validating...')
-    # #get labels name from dataloader. Modified. Long. 11.Jul.24
-    # print('Labels:', dataloader.dataset.labels)    
+    print('Validating...')        
     print('Model in-used: ', args.model_path)
     #Store result to file for presentation
     # Open a file to write the loss values
@@ -90,14 +86,10 @@ def evaluate(dataloader, net, args, criterion, device):
             f.write(f'Loss TEST: = {running_loss:.4f}\n')
 
         y_trues = np.vstack(labels_list)
-        #store y_trues to a file. Modified. Long. 11.Jul.24
-        #np.savetxt('y_trues_org.txt', y_trues, fmt='%d')
 
         #print shape of y_trues. Modified. Long. 11.Jul.24
         print('Shape of y_trues:', y_trues.shape)
         y_scores = np.vstack(output_list)
-        #store y_scores to a file. Modified. Long. 11.Jul.24
-        #np.savetxt('y_scores_org.txt', y_scores, fmt='%f')
         #print shape of y_scores. Modified. Long. 11.Jul.24
         print('Shape of y_scores:', y_scores.shape)
 
@@ -168,7 +160,7 @@ if __name__ == "__main__":
 
     # Introduce new test data
     test_dir = os.path.normpath(args.test_dir)
-    test_label_csv = os.path.join(test_dir, f'labels_{args.num_classes}_classes.csv') #mod to handle missing class in test set
+    test_label_csv = os.path.join(test_dir, f'labels_{args.num_classes}_classes.csv') #Long. mod to handle missing class in test set
 
     if num_classes != 8:          
         classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
@@ -177,6 +169,7 @@ if __name__ == "__main__":
 
     if not args.model_path:
         # args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}.pth'
+        #Modified. Long. Handle different number of classes
         args.model_path = f'models/resnet34_{database}_{args.leads}_{args.seed}_{args.num_classes}_classes.pth'
 
     if args.use_gpu and torch.cuda.is_available():
@@ -193,15 +186,15 @@ if __name__ == "__main__":
     
     label_csv = os.path.join(data_dir, f'labels_{args.num_classes}_classes.csv') #Modified. Long. 23.Mar.24, original: os.path.join(data_dir, 'labelx.csv')
        
-    #if test_dir is not provided, use the same training data for validation and test
+    #Note: split_data function will return train and validation folds
+    #unless test_dir is provided, then it will return train, validation folds
     #split those by fold number. Modified. Long. 30.Jul.24
     if args.test_dir == '':
         train_folds, val_folds = split_data(seed=args.seed)
-        #remove test folds, as unused in training
-        # test_dataset = ECGDataset('test', data_dir, label_csv, test_folds, leads)
-        # test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True)
-
+        #remove test folds, as unused in training    
     else:
+        # when test_dir is provided, then it will return train, validation 
+        # test folds provided in the test_dir. Modified. Long. 30.Jul.24
         train_folds, val_folds = split_data(seed=args.seed)
         # print('Validation folds:', val_folds)
         test_folds = np.arange(1, 11)
@@ -242,6 +235,7 @@ if __name__ == "__main__":
 
 
     #Add new by Long. 12.08.24
+    # Do plotting only for training phase, for presentation
     if args.phase == 'train':
         # Plot the loss/f1/auc over epochs
         plt.plot(range(0, args.epochs), epoch_losses, marker='o')

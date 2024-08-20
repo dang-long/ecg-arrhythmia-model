@@ -5,7 +5,6 @@ from torch.utils.data import Dataset
 import pandas as pd
 import numpy as np
 import wfdb
-# from utils import load_class_label_from_file
 
 
 def scaling(X, sigma=0.1):
@@ -42,10 +41,9 @@ class ECGDataset(Dataset):
         else:
             self.use_leads = np.where(np.in1d(self.leads, leads))[0]
         self.nleads = len(self.use_leads)
-        # self.classes = ['SNR', 'AF', 'IAVB', 'LBBB', 'RBBB', 'PAC', 'PVC', 'STD', 'STE']
-        # get self.classes from the label_csv, instead of hardcoding. Modified. Long. 31.07.24
-        self.classes = df.columns[1:-1]
-        # print('Classes:', self.classes)        
+        
+        self.classes = df.columns[1:-1] #Modified to handle additional classes. Long. 31.Jul.24
+               
 
         self.n_classes = len(self.classes)
         self.data_dict = {}

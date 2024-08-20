@@ -117,3 +117,4 @@ if __name__ == "__main__":
         np.set_printoptions(precision=3)
         print(f'{classifier} F1s:', f1s)
         print('Avg F1:', np.mean(f1s))
+        
